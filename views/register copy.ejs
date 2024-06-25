@@ -1,0 +1,44 @@
+app.post('/regs', (req, res) => {
+	const { activity, date, duration, location, pic, resourceId } = req.body; 
+  
+	const act = new Activity({
+	  activity,
+	  date,
+	  duration,
+	  location,
+	  pic
+	});
+  
+	act.save()
+	 .then((activity) => {
+		// Create a new Resource instance and associate it with the Activity
+		const resource = new Resource({
+		  resourceId,
+		  activityId: activity.id
+		});
+		return resource.save();
+	  })
+	 .then(() => {
+		req.flash('success', 'Activity and Resource have been added successfully!');
+		res.redirect('/display');
+	  })
+	 .catch((err) => {
+		res.status(500).send("error " + err.message); 
+	  });
+  });
+
+  /*app.get('/updateRes/:id', async (req, res) => {
+	const actId=req.params.id;
+	const act = await Activity.findOne({
+	  where: {
+		id: {
+		  [Op.in]: sequelize.literal(`(SELECT id FROM Activity WHERE id = ${actId})`)
+		}
+	  }
+	});
+	if (act) {
+	  res.render("regOs", { act });
+	} else {
+	  res.status(404);
+	}
+  });*/
