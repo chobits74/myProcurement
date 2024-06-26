@@ -36,7 +36,15 @@ app.get("/registers", (req,res)=>{
 
 app.get("/display", async (req,res)=>{
   const acts = await Activity.findAll();
-  res.render("listActivities", {acts} );
+  //added pagination
+  const page = parseInt(req.query.page)||1;
+  const limit =10; 
+  const startIndex=(page-1)*limit;
+  const endIndex = page * limit;
+  const paginatedData = acts.slice(startIndex,endIndex); 
+  //original render
+  //res.render("listActivities", {acts} );
+  res.render("listActivities", {acts:paginatedData, currentPage: page});
 
 })
 
@@ -118,8 +126,6 @@ app.get('/updateRes/:id', async(req,res)=>{
   }
 });
 
-
-
 app.post('/updateRes/:id', (req, res) => {
   //const actId=Activity.activityId;
   //const activityId=req.params.id;
@@ -173,7 +179,25 @@ app.post('/updateRate/:id', async(req, res) => {
     
 });
   
- 
+app.get('/viewRate', async(req,res)=>{
+  const activities = await Activity.findAll({
+    attributes: ["id", "activity"],
+    include: [{
+      model: Resource,
+      attributes: ["name", "rateQuality", "rateDelivery", "rateSupport"],
+      required: false,
+      where: {
+        activityId: {
+          [Op.col]: "id"
+        }
+      }
+      
+    }]
+  });
+
+  res.render("listRate", { activities });
+  
+})
 
 app.use((req,res)=>{
   res.status(404).render('404'); 
